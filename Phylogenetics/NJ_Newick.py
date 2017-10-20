@@ -2,11 +2,11 @@ import numpy as np
 import copy
 ######input info
 n = 5
-input_order = 'dnt,ptb,ptc,ptd,lc1,lc5'
+input_order = 'seq0,seq1,seq2,seq3,seq4,seq5,seq6,seq7'
 
 
 
-a = np.load("JC_array.npy")
+a = np.load("JC_array_perturb.npy")
 
 ##########
 allresult=[]
@@ -143,6 +143,6 @@ for i in input_order.split(','):
     final_result = final_result.replace('('+i+')', i)
 print ('The final result in Newick Fomat:')
 print ('('+final_result+');')
-tree= open("tree.nwk","w")
+tree= open("tree2.nwk","w")
 tree.write('('+final_result+');')
 tree.close()
