@@ -1,6 +1,7 @@
 import numpy as np 
 import mrcfile
 from scipy.interpolate import RegularGridInterpolator as RGI
+from skimage.color import rgb2gray as rg
 import sys
 from matplotlib import pyplot as plt
 
@@ -18,12 +19,13 @@ def project_fst(mol, R=0):
 
 	###perform 3D transform on molecule 
 	N = mol.shape[0]
-	rho_hat = np.fft.fftshift(mol)
-	rho_hat = np.fft.fftn(rho_hat)
+	rho_hat = np.fft.fftn(mol)
+	rho_hat = np.fft.fftshift(rho_hat)
+	
 	print(np.real(rho_hat))
 	
 	print("Now running Linear Interpolation")
-	N_range = np.linspace(-N, N, N)
+	N_range = np.linspace(0, N, N)
 	rho_hat = RGI((N_range,N_range,N_range), rho_hat, bounds_error= False, fill_value=0)
 	#sys.exit()
 	### make 2D mesh that takes slice of rho hat which NxNx3 grid 
@@ -50,47 +52,19 @@ def project_fst(mol, R=0):
 
 	return np.real(em_slice)
 
-	### we now sample rho_hat on the grid= rho_hat_f(grid)
-	### take the inverse fourier transform of this grid 
-	### get the real portion 
-	### plt.imshow(image)
-
-	### 
-
-	#mol_size = mol.shape[0]
-	#N = np.linspace(0,mol_size-1,mol_size)
-	
-	#ThreeD_sampling_grid = RegularGridInterpolator((N, N, N), mol, method='linear', bounds_error= False, fill_value=0)
-
-
-	### Okay so we have done the linear interpolation for the electron densities for this particular molecule mol.
-	### However, this still doesn't explain how we get
-
-	#a_vector= [1,0,0]
-	#b_vector= [0,1,0]
-	#basis = np.array([a_vector, b_vector])
-	#TwoD_sampling_grid=np.zeros(N,N)
-	#for i in range(0,mol_size):
-	#	for j in range(0,mol_size):
-	#		for k in range(0, mol_size):
-	#			TwoD_sampling_grid[i,k]= np.linalg.solve(basis, ThreeD_sampling_grid([i,j,k]))
-	#print(ThreeD_sampling_grid([1,2,3]))
-	#sys.exit()
-	#eta_array=np.array([[1,0,1],[0,1,2]])
-
-
-
 zika_file=mrcfile.open('zika_153.mrc')
 rho = zika_file.data
 #print(rho)
 print("Now running project_fst")
 image = project_fst(rho)
-
+image= rg(image)
 print("Now showing image")
-plt.imshow(image)
+plt.imshow(image, cmap= "Greys")
 plt.show()
 #print(rho.shape[0])
 # 	#	2D_sampling_grid= 
+
+
 
 
 	
