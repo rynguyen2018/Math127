@@ -47,13 +47,14 @@ def project_fst(mol, R):
 
 	return np.real(em_slice)
 
-zika_file=mrcfile.open('zika_153.mrc')
-rho = zika_file.data
 
-print("Now running project_fst")
-R= RM.get_rotation_matrix()
-image = project_fst(rho, R)
+#zika_file=mrcfile.open('zika_153.mrc')
+#rho = zika_file.data
 
-print("Now showing image")
-plt.imshow(image)
-plt.show()
+#print("Now running project_fst")
+#R= RM.get_rotation_matrix()
+#image = project_fst(rho, R)
+
+#print("Now showing image")
+#plt.imshow(image, cmap= "Greys")
+#plt.show()
