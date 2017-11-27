@@ -5,6 +5,7 @@ from skimage.color import rgb2gray as rg
 import sys
 from matplotlib import pyplot as plt
 import Rotation_Matrix as RM
+
 def project_fst(mol, R):
 	""" 
 		mol is an NXNXN array that contains the electron density of the protein thing
@@ -22,10 +23,11 @@ def project_fst(mol, R):
 	
 	print("Now running Linear Interpolation")
 	N_range = np.arange(-(N-1)/2, (N-1)/2 +1)
+	print("N_range found")
 	rho_hat = RGI((N_range,N_range,N_range), rho_hat, bounds_error= False, fill_value=0)
 
 	### make 2D mesh that takes slice of rho hat which NxNx3 grid 
-	print("Creating 2D Sampling grid")
+	#print("Creating 2D Sampling grid")
 	eta_x, eta_y= np.meshgrid(np.arange(-(N-1)/2, (N-1)/2 +1, dtype= int),np.arange(-(N-1)/2, (N-1)/2 +1, dtype= int), indexing= "ij")
 
 	eta_x= eta_x[...,np.newaxis]
