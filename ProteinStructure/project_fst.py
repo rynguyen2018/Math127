@@ -21,9 +21,9 @@ def project_fst(mol, R):
 	wx, wy, wz = np.meshgrid(np.arange(-(N-1)/2, (N-1)/2 +1, dtype= int),np.arange(-(N-1)/2, (N-1)/2 +1,dtype= int),np.arange(-(N-1)/2, (N-1)/2 +1,dtype= int))
 	rho_hat=((-1)**np.abs(wx+wy+wz)/(N**3)*rho_hat) #np.exp(np.pi*1j*(wx+wy+wz))/(N**3))*(rho_hat)
 	
-	print("Now running Linear Interpolation")
+	#print("Now running Linear Interpolation")
 	N_range = np.arange(-(N-1)/2, (N-1)/2 +1)
-	print("N_range found")
+	#print("N_range found")
 	rho_hat = RGI((N_range,N_range,N_range), rho_hat, bounds_error= False, fill_value=0)
 
 	### make 2D mesh that takes slice of rho hat which NxNx3 grid 
