@@ -6,7 +6,9 @@ import numpy as np
 import mrcfile
 from scipy.interpolate import RegularGridInterpolator as RGI
 import sys
+import time
 
+start = time.time()
 
 def reconstruct(image_array, R_array): 
 	N = image_array[0].shape[0] 
@@ -30,7 +32,6 @@ def reconstruct(image_array, R_array):
 
 
 		print("Creating rotated grid")
-
 		wlx, wly, wlz = np.meshgrid(freq_range, freq_range, freq_range)
 		rot_grid = np.zeros((N,N,N,3))
 
@@ -41,25 +42,28 @@ def reconstruct(image_array, R_array):
 					rot_grid[j,k,l] = np.dot(R_array[i], point) 
 		
 		image_hat_fnc = RGI((freq_range,freq_range,freq_range), image_hat, bounds_error= False, fill_value=0)
-		b_j_hat_fnc = RGI((freq_range,freq_range,freq_range), l_j_hat, bounds_error= False, fill_value=0)
+		l_j_hat_fnc = RGI((freq_range,freq_range,freq_range), l_j_hat, bounds_error= False, fill_value=0)
 
 		image_hat = image_hat_fnc(rot_grid)
-		l_j_hat = image_hat_fnc(rot_grid)
+		l_j_hat = l_j_hat_fnc(rot_grid)
 
 
 
 
 		b_j_hat = image_hat * l_j_hat
+		#print(b_j_hat)
 		b_j_hat = ((-1)**np.abs(wlx+wly+wlz)*(N**3))*b_j_hat
 		b_j_hat = np.fft.ifftshift(b_j_hat)
 		b_j = np.fft.ifftn(b_j_hat)
+		#print(l_j_hat)
+		#sys.exit()
 
 		L += np.real(l_j_hat) 
 		B += np.real(b_j)
-
+	print("Done")
 	return np.float32(np.real(B))
 
-num_images = 10
+num_images = 15
 zika_file = mrcfile.open('zika_153.mrc')
 rho = zika_file.data
 
@@ -73,12 +77,15 @@ for _ in range(0,num_images):
 	R_array.append(R)
 print("Now getting image")
 back_img = reconstruct(image_array, R_array)
-#back_img[np.isnan(back_img)]=0
-
+print(back_img)
+print(np.any(back_img==0))
+back_img[back_img == np.inf] = np.float32(0)
+#print(back_img[np.isnan(back_img)])
 print("Now saving")
 with mrcfile.new('full2.mrc', overwrite=True) as mrc:
 	mrc.set_data(back_img)
-
+end = time.time()
+print(end - start)
 #print(back_img.shape)
 #with file('back_img.mrc', 'w') as outfile:
 #    for slice_2d in image:
