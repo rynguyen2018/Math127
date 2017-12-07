@@ -10,7 +10,7 @@ import time
 
 start = time.time()
 
-def reconstruct(image_array, R_array): 
+def reconstruct(image_array, R_array, filter = False): 
 	N = image_array[0].shape[0] 
 	B = np.zeros((N,N,N)) 
 	L = np.zeros((N,N,N))
@@ -47,23 +47,27 @@ def reconstruct(image_array, R_array):
 		image_hat = image_hat_fnc(rot_grid)
 		l_j_hat = l_j_hat_fnc(rot_grid)
 
-
-
-
+		print("Now computing B_j")
 		b_j_hat = image_hat * l_j_hat
-		#print(b_j_hat)
 		b_j_hat = ((-1)**np.abs(wlx+wly+wlz)*(N**3))*b_j_hat
-		b_j_hat = np.fft.ifftshift(b_j_hat)
-		b_j = np.fft.ifftn(b_j_hat)
-		#print(l_j_hat)
-		#sys.exit()
-
-		L += np.real(l_j_hat) 
+		if filter: 
+			b_j_hat = np.divide(np.real(b_j_hat), np.real(l_j_hat), out=np.zeros_like(np.real(b_j_hat)), where=np.real(l_j_hat)!=0)
+			b_j_hat = np.fft.ifftshift(b_j_hat)
+			b_j = np.fft.ifftn(b_j_hat)
+			#L += np.real(l_j_hat)
+			#B += np.real(b_j_hat)
+		else:
+			b_j_hat = np.fft.ifftshift(b_j_hat)
+			b_j = np.fft.ifftn(b_j_hat)
 		B += np.real(b_j)
-	print("Done")
+	#if filter:
+		#B = np.divide(B, L, out=np.zeros_like(B), where=L!=0)
+		#B = np.fft.ifftshift(B)
+		#B = np.fft.ifftn(B)
 	return np.float32(np.real(B))
+	#return np.float32(np.real(B)/np.real(L))
 
-num_images = 15
+num_images = 20
 zika_file = mrcfile.open('zika_153.mrc')
 rho = zika_file.data
 
@@ -76,11 +80,11 @@ for _ in range(0,num_images):
 	image_array.append(image)
 	R_array.append(R)
 print("Now getting image")
-back_img = reconstruct(image_array, R_array)
-print(back_img)
-print(np.any(back_img==0))
-back_img[back_img == np.inf] = np.float32(0)
-#print(back_img[np.isnan(back_img)])
+back_img = reconstruct(image_array, R_array, filter= True)
+#back_img[np.isinf(back_img)] = np.float32(0)
+#back_img[np.isneginf(back_img)] = np.float32(0)
+#back_img[np.isnan(back_img)] = np.float32(0)
+#print(back_img)
 print("Now saving")
 with mrcfile.new('full2.mrc', overwrite=True) as mrc:
 	mrc.set_data(back_img)
