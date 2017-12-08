@@ -67,7 +67,7 @@ def reconstruct(image_array, R_array, filter = False):
 	return np.float32(np.real(B))
 	#return np.float32(np.real(B)/np.real(L))
 
-num_images = 20
+num_images = 15
 zika_file = mrcfile.open('zika_153.mrc')
 rho = zika_file.data
 
