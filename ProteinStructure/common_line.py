@@ -4,19 +4,23 @@ import numpy as np
 import mrcfile
 import sys
 import scipy.ndimage
+import Rotation_Matrix as RM
 
-a = np.array([1,0,0])
-b = np.array([0,1,0])
-c = np.cross(a,b)
+a1 = np.array([1,0,0])
+b1 = np.array([0,1,0])
+c1 = np.cross(a1,b1)
 
-R1 = np.transpose(np.array([a,b,c]))
-R2 = np.transpose(np.array([b,a,np.cross(b,a)]))
+
+R1 = np.transpose(np.array([a1,b1,c1]))
+R2 = RM.get_rotation_matrix()
+R3 = RM.get_rotation_matrix()
 
 zika_file = mrcfile.open('zika_153.mrc')
 rho = zika_file.data
 	
 image1 = project_fst(rho, R1)
 image2 = project_fst(rho, R2)
+image3 = project_fst(rho, R3)
 
 N = image1.shape[0]
 
@@ -39,17 +43,16 @@ def getLine(image, theta, num_points = 100):
 	 	y0 = N
 	 	x1 = (N-1)/2 - np.tan(theta - np.pi/2) * (N-1)/2
 	 	y1 = 0
-
 	x_values = np.linspace(x0, x1, num_points)
 	y_values = np.linspace(y0, y1, num_points)
 
 	z_values = scipy.ndimage.map_coordinates(image, np.vstack((x_values,y_values)))
-	#fig, axes = plt.subplots(nrows=2)
-	#axes[0].imshow(image)
-	#axes[0].plot([x0, x1], [y0, y1], 'ro-')
-	#axes[0].axis('image')
-	#axes[1].plot(z_values)
-	#plt.show()
+	# fig, axes = plt.subplots(nrows=2)
+	# axes[0].imshow(image)
+	# axes[0].plot([x0, x1], [y0, y1], 'ro-')
+	# axes[0].axis('image')
+	# axes[1].plot(z_values)
+	# plt.show()
 	return z_values
 
 def commonLine(image1, image2): 
@@ -62,13 +65,56 @@ def commonLine(image1, image2):
 			commonLine_array.append(zi)
 			commonLine_array.append(zj)
 			commonLine_product_array.append(np.dot(zi,zj))
+	print("Done")
 	max_index, max_value = max(enumerate(commonLine_product_array), key=lambda p: p[1])
-	return max_index, max_value, commonLine_array
+	return commonLine_array[max_index*2], max_value
+
+def getAllLines(image1, image2, image3): 
+	line_12 = commonLine(image1, image2)
+	line_13 = commonLine(image1, image3)
+	line_21 = commonLine(image2, image1)
+	line_23 = commonLine(image2, image3)
+	line_31 = commonLine(image3, image1)
+	line_32 = commonLine(image3, image2)
+
+	return line_12/norm(line_12), line_21/norm(line_21), line_13/norm(line_13),line_23/norm(line_23), line_31/norm(line_31), line_32/norm(line_32)
 
 def getArcLengths(cos_theta):
 	return np.arccos(cos_theta/4)
 
 def getGlobalAngles(A,B,C): 
-	return np.arccos((np.cos(C)- np.cos(A)*np.cos(N))/(np.sin(A) * np.sin(B))
+	return np.arccos((np.cos(C)- np.cos(A)*np.cos(B))/(np.sin(A) * np.sin(B)))
 
-h, i, j = commonLine(image1,image2)
+#I literally have no idea what to do here 
+def getOrientations(some_3D_matrix, angle): 
+	a1 = np.array([1,0,0])
+	b1 = np.array([0,1,0])
+	c1 = np.cross(a1,b1)
+	R1 = np.transpose(np.array([a1,b1,c1]))
+	
+	N = some_3D_matrix.shape[0]
+	rot_matrix = np.array([[np.cos(theta), -np.sin(theta), 0], 
+							[np.sin(theta), np.cos(theta), 0], 
+							[0, 0 , 1]])
+
+	#I think this is the initial alignment step 
+	proposed_matrix = np.zeros((N,N,N))
+	for theta in range(0,360): 
+		theta = theta * np.pi *2/360
+		rot_matrix = np.array([[np.cos(theta), -np.sin(theta), 0], 
+								[np.sin(theta), np.cos(theta), 0], 
+								[0, 0 , 1]])
+		proposed_matrix = some_3D_matrix*numpy.linalg.inv(R1)
+		if np.isclose(rot_matrix, some_3D_matrix):
+			break
+	# I think this is the rotation by the angle of interest
+	orientation = proposed_matrix * rot_matrix(angle)
+
+	return "TROLOLOLOLOLOL"
+
+l12, l21, l13, l23, l31, l32= getAllLines(image1, image2, image3)
+C, A, B = getArcLengths(np.dot(l12, l13)), getArcLengths(np.dot(l13, l23)), getArcLengths(np.dot(l12, l23))
+gamma, beta, alpha = getGlobalAngles(A, B, C), getGlobalAngles(A, C, B), getGlobalAngles(B, C, A)
+
+
+
