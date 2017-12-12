@@ -110,7 +110,7 @@ def getOrientations(some_3D_matrix, angle):
 	# I think this is the rotation by the angle of interest
 	orientation = proposed_matrix * rot_matrix(angle)
 
-	return "TROLOLOLOLOLOL"
+	return the_rest_of_the_thing
 
 l12, l21, l13, l23, l31, l32= getAllLines(image1, image2, image3)
 C, A, B = getArcLengths(np.dot(l12, l13)), getArcLengths(np.dot(l13, l23)), getArcLengths(np.dot(l12, l23))

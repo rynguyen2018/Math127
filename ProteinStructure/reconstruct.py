@@ -80,7 +80,7 @@ for _ in range(0,num_images):
 	image_array.append(image)
 	R_array.append(R)
 print("Now getting image")
-back_img = reconstruct(image_array, R_array, filter= True)
+back_img = reconstruct(image_array, R_array, filter= False)
 #back_img[np.isinf(back_img)] = np.float32(0)
 #back_img[np.isneginf(back_img)] = np.float32(0)
 #back_img[np.isnan(back_img)] = np.float32(0)
